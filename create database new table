@@ -1,7 +1,0 @@
-Run the following commands to create new table
-
-* set FLASK_APP=views 
-* flask shell
-Shell will be opened
-* from models import db,Post,User,Like,Share,Follow
-* db.create_all()
