@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %} Home {% endblock title %}
+{% block body %}
+
+<div class="container" >
+
+    {% for item in posts %}
+
+    <div class="text-center px-4 my-4 offset-lg-3 col-lg-6 py-4 contianer-post" >
+        <div class="text-left d-flex">
+            <img src="../static/uploads/user.png" width="40" height="40" alt="">
+            <div class="d-grid mx-2" >
+                <label  class="margin-0" >
+                    <b>{{item.getPostUser()}}</b>
+                </label>
+                <label class="post-time" >
+                    {{item.date_created.strftime('%H:%M %h-%m')}}
+                </label>
+            </div>
+        </div>
+        <div class="text-left">
+            <label>{{item.description}}</label>
+        </div>
+        <br>
+
+        {% if item.image %}
+        <img src="/{{item.image}}" class="post-preview" />
+        {% endif %}
+
+        <br>
+        <div class="text-right my-4" >
+            <button class="btn btn-default border {% if item.isLikedByMe(current_user.id) %} btn-Liked {%endif%} " onclick="LikeOrDisLike(this,'textLike{{item.id}}','{{item.id}}','{{item.getLikeID(current_user.id)}}')" >
+                <span>{{item.getLikes()}}</span>  
+                <span id="textLike{{item.id}}" >
+                    {% if item.isLikedByMe(current_user.id) %}
+                    Liked
+                    {% else %}
+                        Like
+                    {% endif %}
+                </span>
+            </button>
+            <a class="btn btn-success" href="/shares/{{item.id}}" >Share</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+
+</script>
+
+{% endblock body %}

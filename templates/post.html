@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %} New Post {% endblock title %}
+{% block body %}
+{% with messages = get_flashed_messages() %}  
+{% if messages %}  
+<div class="alert alert-info" >
+        {% for message in messages %}  
+            <label>{{ message }}</label>  
+        {% endfor %}  
+    </div>
+{% endif %}  
+ {% endwith %} 
+    <div class="container">
+        <br>
+        <h2>Upload New Post</h2>
+       
+
+            <br>
+        <div class="text-center border" >
+            
+            <form method="post" action="/upload_post" enctype="multipart/form-data">
+
+                <div>
+                        <label class="pull-left" >
+                            <img id="imagePreview" class="post-image mx-2 my-2" src="/static/uploads/camera.png" width="100" height="130" />
+                            <input type="file"  onchange="loadFile(event)" name="file" class="collapse form-control" autocomplete="off" >
+                        </label>
+                </div>
+                <textarea name="desc" id="" placeholder="write some description here" class="form-control no-border" rows="10" required></textarea>
+                <br>
+                <div class="text-right" >
+                    <input type="submit" value="Update Status" class="mx-2 btn btn-info">
+                </div>
+                <br>
+            </form>
+        </div>
+
+        <br>
+        <h3>Posts Share To You</h3>
+
+        {% for share in shares %}
+        
+        {% if share.getPostByID(share.post_id) %}
+            <div>
+                    <div class="border px-4 py-4 d-flex justify-content-between" >
+                        <h4 for="">By <b>{{share.getSharedByUser(share.shared_by).name}}</b>:</h4>
+                        <label for="">at {{share.date_created.strftime('%H:%M %h-%m')}}:</label>
+                    </div>
+
+                    <div class="text-center px-4 my-4 offset-lg-3 col-lg-6 py-4 contianer-post" >
+                        <div class="text-left d-flex">
+                            <img src="../static/uploads/user.png" width="40" height="40" alt="">
+                            <div class="d-grid mx-2" >
+                                <label  class="margin-0" >
+                                    <b>{{share.getPostByID(share.post_id).getPostUser()}}</b>
+                                </label>
+                                <label class="post-time" >
+                                    {{share.getPostByID(share.post_id).date_created.strftime('%H:%M %h-%m')}}
+                                </label>
+                            </div>
+                        </div>
+                        <div class="text-left">
+                            <label>{{share.getPostByID(share.post_id).description}}</label>
+                        </div>
+                        <br>
+                
+                        {% if share.getPostByID(share.post_id).image %}
+                        <img src="/{{share.getPostByID(share.post_id).image}}" class="post-preview" />
+                        {% endif %}
+                
+                    </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+
+    </div>
+
+
+    {% endblock body %}

@@ -1,0 +1,42 @@
+{% extends 'layout_authentication.html' %}
+{% block title %} Sign in {% endblock title %}
+
+{% block body %}
+
+<br>
+<br>
+<br>
+<div class="offset-lg-4 col-lg-4 col-md-12 col-sm-12" >
+    
+    <div class="jumbotron" >
+
+    {% with messages = get_flashed_messages() %}  
+    {% if messages %}  
+    <div class="alert alert-info" >
+            {% for message in messages %}  
+                <label>{{ message }}</label>  
+            {% endfor %}  
+        </div>
+    {% endif %}  
+     {% endwith %} 
+
+        <form method="post"  >
+            <div class="form-group" >
+              <label for="exampleInputEmail1">Email address</label>
+              <input type="email" name="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" required>      
+            </div>
+            <div class="form-group">
+              <label for="exampleInputPassword1">Password</label>
+              <input type="password" name="password" class="form-control" id="exampleInputPassword1" placeholder="Password" required>
+            </div>
+            <div class="text-center" >
+                <button type="submit" class="btn btn-primary">Login</button>
+                <br>
+                <a href="/sign-up">sign up here</a>
+            </div>
+            
+        </form>
+    </div>
+</div>
+
+{% endblock body %}
