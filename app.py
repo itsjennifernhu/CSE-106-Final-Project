@@ -13,7 +13,7 @@ from flask import jsonify
 
 bcrypt = Bcrypt(app)
 UPLOAD_FOLDER = 'static/uploads/'
-app.secret_key = "cairocoders-edalan"
+app.secret_key = "secretkey"
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 login_manager = LoginManager()
@@ -37,13 +37,13 @@ def post():
 @app.route('/users-follow')
 @login_required
 def follow_users():
-    users = User.query.filter(id != current_user.id).all()
+    users = Users.query.filter(id != current_user.id).all()
     return render_template('users_follow.html',users=users)
 
 @app.route('/shares/<post_id>')
 @login_required
 def shares(post_id):
-    users = User.query.all()
+    users = Users.query.all()
     return render_template('shares.html',users=users,post_id=post_id)
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -68,7 +68,7 @@ def upload_post():
         file.save(filepath)
     
     description = request.form['desc']
-    post = Post(
+    post = Posts(
         description=description, 
         image=filepath,
         user_id = current_user.id
@@ -85,7 +85,7 @@ def upload_post():
 # posts show on home page.........................
 @app.route('/home', methods=['GET','POST'])
 def show():
-    posts = Post.query.order_by(Post.date_created.desc()).all()
+    posts = Posts.query.order_by(Posts.date_created.desc()).all()
     return render_template('home.html',posts=posts)
 
 
@@ -152,7 +152,7 @@ def like():
 
         if like_id > 0:
             
-            likeOjb = Like.query.filter_by(id=like_id).first()
+            likeOjb = Likes.query.filter_by(id=like_id).first()
             likeOjb.user_id = user_id
             likeOjb.post_id = post_id
 
@@ -166,7 +166,7 @@ def like():
                     like_id = like_id
                 )
 
-        like = Like(
+        like = Likes(
             user_id=user_id, 
             like=bool(like),
             post_id=post_id
@@ -180,7 +180,7 @@ def like():
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return Users.query.get(int(user_id))
 
 
 @app.route('/sign-up' , methods=['GET','POST'])
@@ -192,13 +192,13 @@ def signup():
         name = request.form['name']
         password = request.form['password']
 
-        user = User.query.filter_by(email=email).first()
+        user = Users.query.filter_by(email=email).first()
         if user:
             flash("User already exists")  
             return redirect('/sign-up')  
 
         hashed_password = bcrypt.generate_password_hash(password)
-        user = User(
+        user = Users(
             email=email, 
             name=name,
             password=hashed_password
@@ -222,7 +222,7 @@ def login():
         email = request.form['email']
         password = request.form['password']
 
-        user = User.query.filter_by(email=email).first()
+        user = Users.query.filter_by(email=email).first()
         if user:
             if bcrypt.check_password_hash(user.password, password):
                 login_user(user)
@@ -232,11 +232,6 @@ def login():
             flash("Invalid login")  
             return redirect('/sign-in')  
     return render_template('sign_in.html')
-
-
-
-
-
 
 if __name__ == "__main__":
     app.run(debug=True)
