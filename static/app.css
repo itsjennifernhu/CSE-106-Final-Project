@@ -54,6 +54,45 @@ button[type=submit] {
   border-radius: 10px;
 }
 
+.navbar {
+  position: sticky;
+  background-color: #333;
+  margin: 0;
+  overflow: hidden;
+}
+
+.navbar ul{
+  margin: 0;
+  padding: 0;
+}
+
+.navbar ul li {
+  display: inline-block;
+  list-style-type: none;
+}
+
+#navlinks a:hover {
+  background-color: #FF0;
+  border-radius: 0 10px 10px 0;
+  transform: skew(-20deg);
+}
+
+#logoutbtn {
+  border-radius: 10px;
+}
+
+#logoutbtn:hover {
+  background-color: #FF0;
+}
+
+.navbar > ul > li > a {
+  color: #aaa;
+  display: block;
+  line-height: 2em;
+  padding: 0.5em 0.5em;
+  text-decoration: none;
+}
+
 /* 
 .no-margin 
 {
