@@ -6,12 +6,9 @@ from werkzeug.utils import secure_filename
 from flask import flash
 from models import *
 import uuid
-from flask_bcrypt import Bcrypt
-from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
+from flask_login import login_user, LoginManager, login_required, logout_user, current_user
 from flask import jsonify
 
-
-bcrypt = Bcrypt(app)
 UPLOAD_FOLDER = 'static/uploads/'
 app.secret_key = "secretkey"
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -22,10 +19,8 @@ login_manager.login_view = 'login'
 
 ALLOWED_EXTENSTIONS = set(['png','jpg','jpeg','gif' , 'jfif'])
 
-
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSTIONS
-
 
 @app.route('/post')
 @login_required
@@ -84,7 +79,7 @@ def upload_post():
 
 # posts show on home page.........................
 @app.route('/home', methods=['GET','POST'])
-def show():
+def homepage():
     posts = Posts.query.order_by(Posts.date_created.desc()).all()
     return render_template('home.html',posts=posts)
 
@@ -159,7 +154,7 @@ def like():
             if likeOjb.like:
                likeOjb.like=False 
             else :
-               likeOjb.like = True   
+               likeOjb.like = True 
             db.session.commit()
             return jsonify(
                     code=200,
@@ -183,37 +178,33 @@ def load_user(user_id):
     return Users.query.get(int(user_id))
 
 
-@app.route('/sign-up' , methods=['GET','POST'])
+@app.route('/signup' , methods=['GET','POST'])
 def signup():
-    
     if request.method == 'POST':
-
         email = request.form['email']
         name = request.form['name']
+        handle = request.form['handle']
         password = request.form['password']
 
         user = Users.query.filter_by(email=email).first()
+        # If user exists, redirect to login page.
         if user:
-            flash("User already exists")  
-            return redirect('/sign-up')  
+            flash("User already exists") 
+            return redirect(url_for('login')) 
 
-        hashed_password = bcrypt.generate_password_hash(password)
         user = Users(
-            email=email, 
-            name=name,
-            password=hashed_password
-            )
+                    email=email, 
+                    name=name,
+                    handle=handle,
+                    password=password
+                    )
 
         db.session.add(user)
         db.session.commit()
         flash("User Registered! Sign in now") 
-        return redirect('/')  
+        return redirect(url_for('login'))
 
     return render_template('signup.html')
-
-
-
-
 
 
 @app.route('/' , methods=['GET','POST'] )
@@ -223,15 +214,17 @@ def login():
         password = request.form['password']
 
         user = Users.query.filter_by(email=email).first()
-        if user:
-            if bcrypt.check_password_hash(user.password, password):
-                login_user(user)
-                return redirect('/home')
+        # Redirect to login if user does not exist or typed wrong password.
+        if not user or not user.checkPassword(password):
+            flash("Invalid login")
+            return redirect(url_for('login'))
 
-        else:
-            flash("Invalid login")  
-            return redirect('/sign-in')  
-    return render_template('sign_in.html')
+        # Otherwise log in user and redirect them to the homepage.
+        login_user(user)
+        return redirect(url_for('homepage'))
+
+    return render_template('signin.html')
+
 
 if __name__ == "__main__":
     app.run(debug=True)

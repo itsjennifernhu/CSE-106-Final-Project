@@ -1,45 +1,44 @@
 
-    likeObj_id = 0
-    function LikeOrDisLike(e,id,post_id,like_id)
-    {   
-        if(likeObj_id == 0)
-        {
-            likeObj_id = parseInt(like_id)
-            
-        }
+likeObj_id = 0
+function LikeOrDisLike(e,id,post_id,like_id)
+{   
+    if(likeObj_id == 0)
+    {
+        likeObj_id = parseInt(like_id)
+    }
 
-        var text = $(e).children("#"+id).html().trim()
-        isLiked=false
-        user_id = "{{current_user.id}}"
+    var text = $(e).children("#"+id).html().trim()
+    isLiked=false
+    user_id = "{{current_user.id}}"
 
-        if(text == 'Like')
-        {
-            $(e).children("#"+id).html('Liked')
-            $(e).addClass("btn-Liked")
-            isLiked = true
-        }
-        else 
-        {
-            $(e).children("#"+id).html('Like')
-            $(e).removeClass("btn-Liked")
-            isLiked = false
-
-        }
-
-        console.log(likeObj_id)
-        $.ajax({
-            type : 'post',
-            data : {user_id : user_id ,  post_id: post_id , like : isLiked, like_id : likeObj_id},
-            url : '/like-post',
-            success : function(e)
-            {
-                likeObj_id=e['like_id']
-                
-            }
-        })
-
+    if(text == 'Like')
+    {
+        $(e).children("#"+id).html('Liked')
+        $(e).addClass("btn-Liked")
+        isLiked = true
+    }
+    else 
+    {
+        $(e).children("#"+id).html('Like')
+        $(e).removeClass("btn-Liked")
+        isLiked = false
 
     }
+
+    console.log(likeObj_id)
+    $.ajax({
+        type : 'post',
+        data : {user_id : user_id ,  post_id: post_id , like : isLiked, like_id : likeObj_id},
+        url : '/like-post',
+        success : function(e)
+        {
+            likeObj_id=e['like_id']
+            
+        }
+    })
+
+
+}
 
 
     var loadFile = function(event) {
@@ -106,7 +105,6 @@ function handFollowUser(e,id)
            {
                 $(e).html('Following')
                 $(e).addClass('btn-success')
-
            }
         }
     })

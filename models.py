@@ -1,10 +1,14 @@
-from flask import Flask, render_template,request, redirect
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
-from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import backref
+from datetime import datetime
+import hashlib
+
+SALT = 'BlackPepper'
 
 app = Flask(__name__)
+# Info for SQLAlchemy to connect to database.
 SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostname}/{databasename}".format(
     username = 'ynotdoan',
     password = 'PASS12WORD',
@@ -12,20 +16,20 @@ SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostnam
     databasename = 'ynotdoan$socialapp',
 )
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
-app.config['SQLALCHEMY_POOL_RECYCLE'] = 299
+app.config['SQLALCHEMY_POOL_RECYCLE'] = 299 # Parameter that closes unused connections after 299 seconds.
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+# Models
 class Posts(db.Model):
     __tablename__ = 'posts'
     id = db.Column(db.Integer, primary_key=True)
     image = db.Column(db.String(500),unique=True, nullable=True)
     description = db.Column(db.String(500), nullable=False)
-
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
-
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship("Users", backref=backref("Users", uselist=False))
+
     def getPostUser(self):
         user = Users.query.filter_by(id=self.user_id).first()
         if user:
@@ -49,20 +53,55 @@ class Posts(db.Model):
             return like.id
         return 0
 
-class Users(db.Model, UserMixin):
+class Users(db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    handle = db.Column(db.String(50), unique=True, nullable=False)
+    name = db.Column(db.String(20), nullable=False)
+    handle = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(50),unique=True, nullable=False)
-    password = db.Column(db.String(50), nullable=False)
+    user_password = db.Column(db.String(500), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def isFollowedByMe(self , current_user_id , followed_id):
+    def __repr__(self):
+        return '<Users %r>' % self.handle
+
+    def get_id(self):
+        # Returns unicode that uniquely identifies the user.
+        return self.id
+
+    def is_authenticated(self):
+        # Returns true if user has provided valid credentials
+        return True
+
+    def is_active(self):
+        # Returns true if user's account had been authenticated and activated.
+        return True
+
+    def is_anonymous(self):
+        # Returns true if user is annonymous
+        return False
+
+    @hybrid_property
+    def password(self):
+        # Hybrid property decorator allows expressions to work for python and SQL.
+        return self.user_password
+
+    @password.setter
+    def password(self, p):
+        # Salts and encodes password using SHA256. Then stores the hash password.
+        p += SALT 
+        self.user_password = hashlib.sha256(p.encode()).hexdigest()
+
+    def checkPassword(self, p):
+        # Checks if user inputted password matched the one stored in record.
+        p += SALT
+        return self.user_password == hashlib.sha256(p.encode()).hexdigest()
+
+    def isFollowedByMe(self, current_user_id , followed_id):
         follow=Follow.query.filter_by(Followed_id=followed_id).filter_by(follower_id=current_user_id).first()  
         if follow:
            return True
-        else :
+        else:
            return False 
 
 class Likes(db.Model):
