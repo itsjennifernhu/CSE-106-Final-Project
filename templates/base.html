@@ -25,16 +25,22 @@
           aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-    
+
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav mr-auto">
             <li class="nav-item">
               <a class="nav-link" href="/home">News Feed <span class="sr-only">(current)</span></a>
             </li>
             <li class="nav-item">
+              <a class="nav-link" href="/myfeed">My Feed</a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link" href="/users-follow">Users</a>
             </li>
-             
+            <li class="nav-item">
+              <a class="nav-link" href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">About</a>
+            </li>
+
           </ul>
           <ul class="navbar-nav form-inline my-2 my-lg-0">
             <li class="line-height" >
@@ -44,7 +50,7 @@
                   </b>
                 </h4>
                 <a class="nav-link" href="/post" type="submit">Profile</a>
-            </li>  
+            </li>
             <li>
               <a class="text-center nav-link btn-danger btn text-white" href="/logout" type="submit">Logout</a>
 
@@ -53,7 +59,11 @@
         </div>
       </nav>
 {% block body %}
-    
+
 {% endblock body %}
+
+<br><br>
+<p id="sponsor">Powered by Walmart © 2022</p>
+<br>
 </body>
 </html>

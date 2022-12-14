@@ -91,6 +91,31 @@ def show():
     return render_template('home.html',posts=posts)
 
 
+@app.route('/myfeed', methods=['GET', 'POST'])
+@login_required
+def getFeed():
+    # if request.method == 'POST':
+    my_feed = {}
+    feed = db.session.query(Follow, Post) \
+        .order_by(Post.date_created.desc()) \
+        .filter(Follow.follower_id==current_user.id) \
+        .filter(Post.user_id==Follow.Followed_id).all()
+    # for f in feed:
+    #     print(f)
+    #     my_feed[f.Post.get_id()] = {
+    #         "date":f.Post.getDate(),
+    #         "likes":f.Post.getLikes(),
+    #         "user":f.Post.getUser(),
+    #         "handle":f.Post.getHandle(),
+    #         "content":f.Post.getDescription(),
+    #         "date":f.Post.getDate(),
+    #         "title":f.Post.getTitle()
+    #     }
+        # return jsonify(my_feed)
+
+    return render_template('myfeed.html', posts=feed)
+
+
 # share  post
 @app.route('/share-post', methods=['POST'])
 def share():
