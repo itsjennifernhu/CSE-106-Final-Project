@@ -1,23 +1,23 @@
 {% extends 'base.html' %}
 {% block title %} New Post {% endblock title %}
 {% block body %}
-{% with messages = get_flashed_messages() %}  
-{% if messages %}  
+{% with messages = get_flashed_messages() %}
+{% if messages %}
 <div class="alert alert-info" >
-        {% for message in messages %}  
-            <label>{{ message }}</label>  
-        {% endfor %}  
+        {% for message in messages %}
+            <label>{{ message }}</label>
+        {% endfor %}
     </div>
-{% endif %}  
- {% endwith %} 
+{% endif %}
+ {% endwith %}
     <div class="container">
         <br>
         <h2>Upload New Post</h2>
-       
+
 
             <br>
         <div class="text-center border" >
-            
+
             <form method="post" action="/upload_post" enctype="multipart/form-data">
 
                 <div>
@@ -39,7 +39,7 @@
         <h3>Posts Share To You</h3>
 
         {% for share in shares %}
-        
+
         {% if share.getPostByID(share.post_id) %}
             <div>
                     <div class="border px-4 py-4 d-flex justify-content-between" >
@@ -63,11 +63,11 @@
                             <label>{{share.getPostByID(share.post_id).description}}</label>
                         </div>
                         <br>
-                
-                        {% if share.getPostByID(share.post_id).image %}
-                        <img src="/{{share.getPostByID(share.post_id).image}}" class="post-preview" />
+
+                        {% if share.getPostByID(share.post_id).getImage() %}
+                        <img src="/{{share.getPostByID(share.post_id).getImage()}}" class="post-preview" />
                         {% endif %}
-                
+
                     </div>
             </div>
             {% endif %}

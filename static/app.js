@@ -1,15 +1,16 @@
 
 likeObj_id = 0
-function LikeOrDisLike(e,id,post_id,like_id)
-{   
+function LikeOrDisLike(e,id,post_id,like_id,user_id)
+{
     if(likeObj_id == 0)
     {
         likeObj_id = parseInt(like_id)
+
     }
 
     var text = $(e).children("#"+id).html().trim()
     isLiked=false
-    user_id = "{{current_user.id}}"
+    // user_id = "{{current_user.id}}"
 
     if(text == 'Like')
     {
@@ -17,7 +18,7 @@ function LikeOrDisLike(e,id,post_id,like_id)
         $(e).addClass("btn-Liked")
         isLiked = true
     }
-    else 
+    else
     {
         $(e).children("#"+id).html('Like')
         $(e).removeClass("btn-Liked")
@@ -33,7 +34,7 @@ function LikeOrDisLike(e,id,post_id,like_id)
         success : function(e)
         {
             likeObj_id=e['like_id']
-            
+
         }
     })
 
@@ -41,17 +42,17 @@ function LikeOrDisLike(e,id,post_id,like_id)
 }
 
 
-    var loadFile = function(event) {
-        var output = document.getElementById('imagePreview');
-        output.src = URL.createObjectURL(event.target.files[0]);
-        output.onload = function() {
-          URL.revokeObjectURL(output.src) // free memory
-        }
-      };
+var loadFile = function(event) {
+    var output = document.getElementById('imagePreview');
+    output.src = URL.createObjectURL(event.target.files[0]);
+    output.onload = function() {
+        URL.revokeObjectURL(output.src) // free memory
+    }
+    };
 
-      function share(btn,shared_to)
+function share(btn,shared_to,post_id)
 {
-    post_id = "{{post_id}}"
+    // post_id = "{{post_id}}"
 
     $.ajax({
             type : 'post',
@@ -61,7 +62,7 @@ function LikeOrDisLike(e,id,post_id,like_id)
             {
                 $(btn).text('shared')
                 $(btn).addClass('btn-success')
-                
+
             }
         })
 }
@@ -76,7 +77,7 @@ function handFollowUser(e,id)
     {
         is_following = false
     }
-    else 
+    else
     {
         is_following = true
     }
@@ -86,9 +87,9 @@ function handFollowUser(e,id)
         if(!confirm("Are you sure to unfollow this user?"))
         {
             return
-        } 
+        }
     }
-    
+
     $.ajax({
         'type' : 'post',
         'data' : {followed_id : id , is_following : is_following},
@@ -100,11 +101,12 @@ function handFollowUser(e,id)
            {
                $(e).html('Follow')
                 $(e).removeClass('btn-success')
-           } 
-           else 
+           }
+           else
            {
                 $(e).html('Following')
                 $(e).addClass('btn-success')
+
            }
         }
     })

@@ -6,11 +6,12 @@ from werkzeug.utils import secure_filename
 from flask import flash
 from models import *
 import uuid
-from flask_login import login_user, LoginManager, login_required, logout_user, current_user
+from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from flask import jsonify
 
+
 UPLOAD_FOLDER = 'static/uploads/'
-app.secret_key = "secretkey"
+app.secret_key = "cairocoders-edalan"
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 login_manager = LoginManager()
@@ -19,8 +20,10 @@ login_manager.login_view = 'login'
 
 ALLOWED_EXTENSTIONS = set(['png','jpg','jpeg','gif' , 'jfif'])
 
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSTIONS
+
 
 @app.route('/post')
 @login_required
@@ -32,13 +35,13 @@ def post():
 @app.route('/users-follow')
 @login_required
 def follow_users():
-    users = Users.query.filter(id != current_user.id).all()
+    users = User.query.filter(id != current_user.id).all()
     return render_template('users_follow.html',users=users)
 
 @app.route('/shares/<post_id>')
 @login_required
 def shares(post_id):
-    users = Users.query.all()
+    users = User.query.all()
     return render_template('shares.html',users=users,post_id=post_id)
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -51,36 +54,40 @@ def logout():
 @app.route('/upload_post', methods=['POST'])
 @login_required
 def upload_post():
-    
-    filepath = None
-    if 'file' not in request.files:
-        flash('no file part')
-    file = request.files['file']
-    
-    if file and allowed_file(file.filename):
-        filename = str(uuid.uuid4()) +  secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER']+filename)        
-        file.save(filepath)
-    
-    description = request.form['desc']
-    post = Posts(
-        description=description, 
-        image=filepath,
-        user_id = current_user.id
-        )
+    if request.method == 'POST':
+        filepath = None
+        if 'file' not in request.files:
+            flash('no file part')
+        file = request.files['file']
+        if file and allowed_file(file.filename):
+            filename = str(uuid.uuid4()) +  secure_filename(file.filename)
+            # filepath = os.path.join(app.config['UPLOAD_FOLDER']+filename)
+            # file.save(filepath)
+            # os.path.join(uploads_dir, secure_filename(input.filename))
+            # file.save(os.path.join(UPLOAD_FOLDER, secure_filename(file.filename)))
+            basedir = os.path.abspath(os.path.dirname(__file__))
+            filepath = os.path.join(basedir, app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
 
-    db.session.add(post)
-    db.session.commit()
-    flash("Post uploaded")  
+        description = request.form['desc']
+        p = Post(
+            description=description,
+            image=filepath,
+            user_id = current_user.id
+            )
 
-    return redirect('/post')
+        db.session.add(p)
+        db.session.commit()
+        flash("Post uploaded")
+
+        return redirect('/post')
 
 
 
 # posts show on home page.........................
 @app.route('/home', methods=['GET','POST'])
-def homepage():
-    posts = Posts.query.order_by(Posts.date_created.desc()).all()
+def show():
+    posts = Post.query.order_by(Post.date_created.desc()).all()
     return render_template('home.html',posts=posts)
 
 
@@ -94,7 +101,7 @@ def share():
         post_id = request.form['post_id']
 
         share = Share(
-            shared_to=shared_to, 
+            shared_to=shared_to,
             post_id=post_id,
             shared_by=shared_by
             )
@@ -113,25 +120,25 @@ def follow():
         follower_id = current_user.id
         followed_id = request.form['followed_id']
         is_following = request.form['is_following']
-        
+
         if is_following == 'true':
 
             follow = Follow(
-                follower_id=follower_id, 
+                follower_id=follower_id,
                 Followed_id=followed_id
                 )
             db.session.add(follow)
             db.session.commit()
             return jsonify(
                         code=200,
-                    ) 
+                    )
 
-        Follow.query.filter_by(Followed_id=followed_id).filter_by(follower_id=follower_id).delete() 
+        Follow.query.filter_by(Followed_id=followed_id).filter_by(follower_id=follower_id).delete()
         db.session.commit()
         return jsonify(
                         code=200,
-                    )    
-           
+                    )
+
 # like and dislike post
 @app.route('/like-post', methods=['POST'])
 def like():
@@ -146,23 +153,23 @@ def like():
         # db.session.commit()
 
         if like_id > 0:
-            
-            likeOjb = Likes.query.filter_by(id=like_id).first()
+
+            likeOjb = Like.query.filter_by(id=like_id).first()
             likeOjb.user_id = user_id
             likeOjb.post_id = post_id
 
             if likeOjb.like:
-               likeOjb.like=False 
+               likeOjb.like=False
             else :
-               likeOjb.like = True 
+               likeOjb.like = True
             db.session.commit()
             return jsonify(
                     code=200,
                     like_id = like_id
                 )
 
-        like = Likes(
-            user_id=user_id, 
+        like = Like(
+            user_id=user_id,
             like=bool(like),
             post_id=post_id
             )
@@ -175,36 +182,36 @@ def like():
 
 @login_manager.user_loader
 def load_user(user_id):
-    return Users.query.get(int(user_id))
+    return User.query.get(int(user_id))
 
 
 @app.route('/signup' , methods=['GET','POST'])
 def signup():
+
     if request.method == 'POST':
+
         email = request.form['email']
         name = request.form['name']
-        handle = request.form['handle']
         password = request.form['password']
 
-        user = Users.query.filter_by(email=email).first()
-        # If user exists, redirect to login page.
-        if user:
-            flash("User already exists") 
-            return redirect(url_for('login')) 
+        u = User.query.filter_by(email=email).first()
+        if u:
+            flash("User already exists")
+            return redirect('/')
 
-        user = Users(
-                    email=email, 
-                    name=name,
-                    handle=handle,
-                    password=password
-                    )
+        u = User(
+            email=email,
+            name=name,
+            password=password
+            )
 
-        db.session.add(user)
+        db.session.add(u)
         db.session.commit()
-        flash("User Registered! Sign in now") 
-        return redirect(url_for('login'))
+        flash("User Registered! Sign in now")
+        return redirect('/')
 
     return render_template('signup.html')
+
 
 
 @app.route('/' , methods=['GET','POST'] )
@@ -213,17 +220,18 @@ def login():
         email = request.form['email']
         password = request.form['password']
 
-        user = Users.query.filter_by(email=email).first()
-        # Redirect to login if user does not exist or typed wrong password.
-        if not user or not user.checkPassword(password):
+        u = User.query.filter_by(email=email).first()
+        if not u or not u.checkPassword(password):
             flash("Invalid login")
-            return redirect(url_for('login'))
+            return redirect('/')
 
-        # Otherwise log in user and redirect them to the homepage.
-        login_user(user)
-        return redirect(url_for('homepage'))
+        login_user(u)
+        return redirect('/home')
+    return render_template('sign_in.html')
 
-    return render_template('signin.html')
+
+
+
 
 
 if __name__ == "__main__":

@@ -24,13 +24,13 @@
         <br>
 
         {% if item.image %}
-        <img src="/{{item.image}}" class="post-preview" />
+        <img src="../static/uploads/{{item.getImage()}}" class="post-preview">
         {% endif %}
 
         <br>
         <div class="text-right my-4" >
-            <button class="btn btn-default border {% if item.isLikedByMe(current_user.id) %} btn-Liked {%endif%} " onclick="LikeOrDisLike(this,'textLike{{item.id}}','{{item.id}}','{{item.getLikeID(current_user.id)}}')" >
-                <span>{{item.getLikes()}}</span>  
+            <button class="btn btn-default border {% if item.isLikedByMe(current_user.id) %} btn-Liked {%endif%} " onclick="LikeOrDisLike(this,'textLike{{item.id}}','{{item.id}}','{{item.getLikeID(current_user.id)}}', '{{current_user.id}}')" >
+                <span>{{item.getLikes()}}</span>
                 <span id="textLike{{item.id}}" >
                     {% if item.isLikedByMe(current_user.id) %}
                     Liked
